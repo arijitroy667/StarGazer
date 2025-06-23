@@ -8,6 +8,16 @@ dotenv.config({
 
 connectDB();
 
+
+
+
+
+
+
+
+
+
+// THESE LINES ARE USED WHEN CONNECTING MONGODB DIRECTLY
 /*
 import express from "express";
 const app = express();
