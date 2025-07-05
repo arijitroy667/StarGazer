@@ -1,9 +1,12 @@
+import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 //import { asyncHandler } from "../utils/asynchandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -135,8 +138,8 @@ const loginUser = asyncHandler(async (req, res) => {
         200,
         {
           user: loggedInUser,
-          accessToken,
-          refreshToken,
+          //accessToken,
+          //refreshToken,
         },
         "User logged in successfully"
       )
