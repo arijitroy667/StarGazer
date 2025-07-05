@@ -9,7 +9,7 @@ const subscriptionSchema = new Schema(
     channel: {
       type: Schema.Types.ObjectId, // the channel being subscribed to
       ref: "User",
-    },f
+    },
   },
   { timestamps: true }
 );
