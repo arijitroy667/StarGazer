@@ -23,4 +23,15 @@ const uploadOnCloudinary = async (localFilePath) => {
   }
 };
 
-export { uploadOnCloudinary };
+const deleteFromCloudinary = async (publicId) => {
+  return cloudinary.uploader.destroy(publicId);
+};
+
+const getVideoDuration = async (publicId) => {
+  const resource = await cloudinary.api.resource(publicId, {
+    resource_type: "video",
+  });
+  return resource.duration; // duration in seconds
+};
+
+export { getVideoDuration, uploadOnCloudinary, deleteFromCloudinary };

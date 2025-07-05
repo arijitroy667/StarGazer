@@ -37,7 +37,12 @@ const getChannelStats = asyncHandler(async (req, res) => {
 
   const totalViews = totalViewsResult[0]?.totalViews || 0;
 
-  if (!totalVideos || !totalSubscribers || !totalLikes || !totalViews) {
+  if (
+    totalVideos === null ||
+    totalSubscribers === null ||
+    totalLikes === null ||
+    totalViews === null
+  ) {
     throw new ApiError(404, "Channel stats not found");
   }
 
@@ -68,10 +73,6 @@ const getChannelVideos = asyncHandler(async (req, res) => {
     .sort({ createdAt: -1 })
     .skip((parseInt(page) - 1) * parseInt(limit))
     .limit(parseInt(limit));
-
-  if (!allVideos || allVideos.length === 0) {
-    throw new ApiError(404, "No videos found for this channel");
-  }
 
   return res
     .status(200)

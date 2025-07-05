@@ -83,10 +83,6 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     },
   ]);
 
-  if (!subscribers || subscribers.length === 0) {
-    throw new ApiError(404, "No subscribers found for this channel");
-  }
-
   return res
     .status(200)
     .json(
@@ -129,10 +125,6 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
       },
     },
   ]);
-
-  if (!channels || channels.length === 0) {
-    throw new ApiError(404, "No subscribed channels found for this user");
-  }
 
   return res
     .status(200)

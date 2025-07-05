@@ -110,7 +110,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
     {
       $lookup: {
         from: "videos",
-        localField: "_id",
+        localField: "video",
         foreignField: "_id",
         as: "videoDetails",
       },
@@ -122,10 +122,6 @@ const getLikedVideos = asyncHandler(async (req, res) => {
       $replaceRoot: { newRoot: "$videoDetails" },
     },
   ]);
-
-  if (!likedVideos || likedVideos.length === 0) {
-    return res.status(404).json(new ApiError(404, "No liked videos found"));
-  }
 
   return res
     .status(200)

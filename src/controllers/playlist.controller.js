@@ -31,7 +31,7 @@ const createPlaylist = asyncHandler(async (req, res) => {
   }
 
   return res
-    .ststus(200)
+    .status(200)
     .json(new ApiResponse(200, newPlaylist, "Playlist created successfully"));
 });
 
@@ -44,10 +44,6 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
   const playlists = await Playlist.find({ owner: userId });
   // Returns an array of playlists for the user
   //because a user can have multiple playlists
-
-  if (!playlists || playlists.length === 0) {
-    throw new ApiError(404, "No playlists found for this user");
-  }
 
   return res
     .status(200)
@@ -167,7 +163,7 @@ const updatePlaylist = asyncHandler(async (req, res) => {
   }
 
   return res
-    .ststus(200)
+    .status(200)
     .json(
       new ApiResponse(200, updatedPlaylist, "Playlist updated successfully")
     );
