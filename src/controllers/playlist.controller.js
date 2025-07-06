@@ -41,7 +41,9 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid user ID");
   }
 
-  const playlists = await Playlist.find({ owner: userId });
+  const playlists = await Playlist.find({ owner: userId }).sort({
+    createdAt: -1,
+  });
   // Returns an array of playlists for the user
   //because a user can have multiple playlists
 

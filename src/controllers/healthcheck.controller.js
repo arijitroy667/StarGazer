@@ -1,11 +1,25 @@
+import mongoose from "mongoose";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 const healthcheck = asyncHandler(async (req, res) => {
-  //TODO: build a healthcheck response that simply returns the OK status as json with a message
+  let dbStatus = "unknown";
+  try {
+    // For Mongoose >= 5.13, use connection.readyState
+    dbStatus =
+      mongoose.connection.readyState === 1 ? "connected" : "disconnected";
+    // Optionally, actually ping the DB
+    // await mongoose.connection.db.admin().ping();
+  } catch (err) {
+    dbStatus = "error";
+  }
+
   const status = {
-    status: "OK",
+    api: "OK",
+    database: dbStatus,
+    uptime: process.uptime(),
+    timestamp: new Date(),
   };
 
   return res
