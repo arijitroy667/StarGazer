@@ -23,8 +23,4 @@ const likeSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-likeSchema.index({ video: 1, likeBy: 1 }, { unique: true, sparse: true });
-likeSchema.index({ comment: 1, likeBy: 1 }, { unique: true, sparse: true });
-likeSchema.index({ tweet: 1, likeBy: 1 }, { unique: true, sparse: true });
-
 export const Like = mongoose.model("Like", likeSchema);

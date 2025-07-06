@@ -7,7 +7,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import {
   uploadOnCloudinary,
   deleteFromCloudinary,
-  getVideoDuration,
+  getPublicIdFromUrl,
 } from "../utils/cloudinary.js";
 
 const getAllVideos = asyncHandler(async (req, res) => {
@@ -16,8 +16,9 @@ const getAllVideos = asyncHandler(async (req, res) => {
     limit = 10,
     sortBy = "createdAt",
     sortType = "desc",
-    userId,
   } = req.query;
+
+  const userId = req.user?._id;
 
   if (!userId || !isValidObjectId(userId)) {
     throw new ApiError(400, "Valid userId is required");
@@ -58,57 +59,53 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
 const publishAVideo = asyncHandler(async (req, res) => {
   const { title, description } = req.body;
-  const userId = req.user._id;
+  const userId = req.user?._id;
 
-  if (!title || !description) {
+  if (!title?.trim() || !description?.trim()) {
     throw new ApiError(400, "Title and description are required");
   }
 
-  // Temp. local upload using Multer
-  const videoFileLocalPath = req.file?.videoFile[0]?.path;
-  const thumbnailLocalPath = req.file?.thumbnail[0]?.path;
+  const videoFileLocalPath = req.files?.videoFile?.[0]?.path;
+  const thumbnailLocalPath = req.files?.thumbnail?.[0]?.path;
 
   if (!videoFileLocalPath || !thumbnailLocalPath) {
     throw new ApiError(400, "Video file and thumbnail are required");
   }
 
-  // Upload files to Cloudinary
+  // Upload to cloudinary
   const videoFile = await uploadOnCloudinary(videoFileLocalPath);
-  const thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
-
-  if (!videoFile || !thumbnail) {
-    throw new ApiError(500, "Failed to upload video or thumbnail");
+  if (!videoFile?.url) {
+    throw new ApiError(500, "Video file upload failed");
   }
 
-  const getPublicId = (url) => {
-    // Example: extract 'folder/filename' from the URL
-    const parts = url.split("/");
-    const fileWithExt = parts.slice(-2).join("/"); // folder/filename.ext
-    return fileWithExt.split(".").slice(0, -1).join("."); // folder/filename
-  };
+  const thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
+  if (!thumbnail?.url) {
+    throw new ApiError(500, "Thumbnail upload failed");
+  }
 
-  const videoPublicId = getPublicId(videoFile.url);
-
-  const videoDuration = await getVideoDuration(videoPublicId);
-
-  const newVideo = new Video({
+  // Create video document
+  const video = await Video.create({
+    title: title.trim(),
+    description: description.trim(),
     videoFile: videoFile.url,
     thumbnail: thumbnail.url,
-    title,
-    description,
-    duration: videoDuration,
     owner: userId,
+    duration: videoFile.duration,
   });
 
-  if (!newVideo) {
-    throw new ApiError(500, "Failed to create video");
-  }
+  // Get the created video with populated owner, similar to registerUser
+  const publishedVideo = await Video.findById(video._id).populate(
+    "owner",
+    "username avatar"
+  );
 
-  await newVideo.save();
+  if (!publishedVideo) {
+    throw new ApiError(500, "Failed to publish video");
+  }
 
   return res
     .status(201)
-    .json(new ApiResponse(201, newVideo, "Video published successfully"));
+    .json(new ApiResponse(201, publishedVideo, "Video published successfully"));
 });
 
 const getVideoById = asyncHandler(async (req, res) => {
@@ -133,14 +130,13 @@ const getVideoById = asyncHandler(async (req, res) => {
 
 const updateVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
-  //TODO: update video details like title, description, thumbnail
 
   const { title, description } = req.body;
   if (!isValidObjectId(videoId)) {
     throw new ApiError(400, "Invalid video ID");
   }
 
-  const thumbnailLocalPath = req.file?.thumbnail[0]?.path;
+  const thumbnailLocalPath = req.file?.path;
 
   if (!thumbnailLocalPath) {
     throw new ApiError(400, "Thumbnail is required");
@@ -184,18 +180,16 @@ const deleteVideo = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Video not found");
   }
 
-  // 2. Extract public IDs from Cloudinary URLs
-  // Assuming your URLs are like: https://res.cloudinary.com/<cloud_name>/.../<public_id>.<ext>
-  // You should store public_id in DB for easier deletion, but if not:
-  const getPublicId = (url) => {
-    // Example: extract 'folder/filename' from the URL
-    const parts = url.split("/");
-    const fileWithExt = parts.slice(-2).join("/"); // folder/filename.ext
-    return fileWithExt.split(".").slice(0, -1).join("."); // folder/filename
-  };
+  // 2. extract public_id from url
+  const videoPublicId = getPublicIdFromUrl(video.videoFile);
+  const thumbnailPublicId = getPublicIdFromUrl(video.thumbnail);
 
-  const videoPublicId = getPublicId(video.videoFile);
-  const thumbnailPublicId = getPublicId(video.thumbnail);
+  if (!videoPublicId || !thumbnailPublicId) {
+    throw new ApiError(
+      500,
+      "Could not extract public_id from video or thumbnail URL"
+    );
+  }
 
   // 3. Delete files from Cloudinary
   await deleteFromCloudinary(videoPublicId);

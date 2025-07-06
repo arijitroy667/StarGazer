@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-
+import { ApiError } from "./utils/ApiError.js";
 const app = express();
 
 app.use(
@@ -39,5 +39,25 @@ app.use("/api/v1/playlist", playlistRouter);
 app.use("/api/v1/dashboard", dashboardRouter);
 
 // http://localhost:8000/api/v1/users/register
+
+app.use((err, req, res, next) => {
+  // Log the error for debugging
+  console.error("Error handler:", err);
+
+  if (err instanceof ApiError) {
+    return res.status(err.statusCode).json({
+      success: false,
+      message: err.message,
+      errors: err.errors || [],
+      data: err.data || null,
+    });
+  }
+
+  // Fallback for other errors
+  res.status(500).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+  });
+});
 
 export { app };

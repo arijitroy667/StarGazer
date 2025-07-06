@@ -27,11 +27,16 @@ const deleteFromCloudinary = async (publicId) => {
   return cloudinary.uploader.destroy(publicId);
 };
 
-const getVideoDuration = async (publicId) => {
-  const resource = await cloudinary.api.resource(publicId, {
-    resource_type: "video",
-  });
-  return resource.duration; // duration in seconds
+const getPublicIdFromUrl = (url) => {
+  // Cloudinary URLs look like: https://res.cloudinary.com/<cloud_name>/video/upload/v1234567890/folder/filename.mp4
+  // public_id is everything after '/upload/' and before the file extension
+  const parts = url.split("/upload/");
+  if (parts.length < 2) return null;
+  const pathWithVersionAndExt = parts[1];
+  // Remove version if present (e.g., v1234567890/)
+  const path = pathWithVersionAndExt.replace(/^v\d+\//, "");
+  // Remove file extension
+  return path.replace(/\.[^/.]+$/, "");
 };
 
-export { getVideoDuration, uploadOnCloudinary, deleteFromCloudinary };
+export { getPublicIdFromUrl, uploadOnCloudinary, deleteFromCloudinary };

@@ -83,7 +83,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
     const result = await Like.deleteOne({ _id: existingTweet._id });
     return res
       .status(200)
-      .json(new ApiResponse(200, result, "Tweet removed successfully"));
+      .json(new ApiResponse(200, result, "Liked Tweet removed successfully"));
   } else {
     // Create a new like document for this video and user
     const tweet = await Like.create({
@@ -93,7 +93,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 
     return res
       .status(201)
-      .json(new ApiResponse(201, tweet, "Tweet added successfully"));
+      .json(new ApiResponse(201, tweet, "Liked Tweet added successfully"));
   }
 });
 
@@ -103,7 +103,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
   const likedVideos = await Like.aggregate([
     {
       $match: {
-        likeBy: new mongoose.Schema.Types.ObjectId(userId),
+        likeBy: new mongoose.Types.ObjectId(userId),
         video: { $ne: null },
       },
     },
