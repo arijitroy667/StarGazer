@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: stargazer-backend
+    env: node
+    buildCommand: npm install
+    startCommand: cd src && node index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
