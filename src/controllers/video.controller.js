@@ -230,6 +230,55 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     );
 });
 
+const getUserVideos = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  if (!isValidObjectId(userId)) {
+    throw new ApiError(400, "Invalid user ID");
+  }
+  const videos = await Video.find({ owner: userId })
+    .populate("owner", "username avatar")
+    .sort({ createdAt: -1 });
+
+  if (!videos || videos.length === 0) {
+    throw new ApiError(404, "No videos found for this user");
+  }
+  return res
+    .status(200)
+    .json(new ApiResponse(200, videos, "User videos fetched successfully"));
+});
+
+const getEveryVideo = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
+
+  // Pagination
+  const skip = (parseInt(page) - 1) * parseInt(limit);
+
+  // Query all videos
+  const videos = await Video.find()
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(parseInt(limit))
+    .populate("owner", "username avatar");
+
+  // Get total count for pagination info
+  const totalVideos = await Video.countDocuments();
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        videos,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalVideos,
+        totalPages: Math.ceil(totalVideos / limit),
+      },
+      "All videos fetched successfully"
+    )
+  );
+});
+
 export {
   getAllVideos,
   publishAVideo,
@@ -237,4 +286,6 @@ export {
   updateVideo,
   deleteVideo,
   togglePublishStatus,
+  getUserVideos,
+  getEveryVideo
 };
