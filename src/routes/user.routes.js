@@ -56,7 +56,7 @@ router
 
 router.route("/c/:username").get(verifyJWT, getUserChannelProfile);
 
-router.route("/allUsers").get(getAllUsers);
+router.route("public-route/allUsers").get(getAllUsers);
 
 router.route("/:userId").get(getUserChannelProfileById);
 
