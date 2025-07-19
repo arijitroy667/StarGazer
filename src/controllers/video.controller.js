@@ -249,16 +249,18 @@ const getUserVideos = asyncHandler(async (req, res) => {
 });
 
 const getEveryVideo = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10 } = req.query;
+
+  const page = Number(req.query.page) > 0 ? Number(req.query.page) : 1;
+  const limit = Number(req.query.limit) > 0 ? Number(req.query.limit) : 10;
 
   // Pagination
-  const skip = (parseInt(page) - 1) * parseInt(limit);
+  const skip = (parseInt(page) - 1) * limit;
 
   // Query all videos
   const videos = await Video.find()
     .sort({ createdAt: -1 })
     .skip(skip)
-    .limit(parseInt(limit))
+    .limit(limit)
     .populate("owner", "username avatar");
 
   // Get total count for pagination info
@@ -269,8 +271,8 @@ const getEveryVideo = asyncHandler(async (req, res) => {
       200,
       {
         videos,
-        page: parseInt(page),
-        limit: parseInt(limit),
+        page: page,
+        limit: limit,
         totalVideos,
         totalPages: Math.ceil(totalVideos / limit),
       },
