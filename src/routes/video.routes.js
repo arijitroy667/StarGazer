@@ -46,6 +46,6 @@ router
 
 router.route("/:userId").get(getUserVideos);
 
-router.route("/everyvideo").get(getEveryVideo);
+router.route("/everyvideo/:page/:limit").get(getEveryVideo);
 
 export default router;
