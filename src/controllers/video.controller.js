@@ -250,8 +250,8 @@ const getUserVideos = asyncHandler(async (req, res) => {
 
 const getEveryVideo = asyncHandler(async (req, res) => {
 
-  const page = Number(req.query.page) > 0 ? Number(req.query.page) : 1;
-  const limit = Number(req.query.limit) > 0 ? Number(req.query.limit) : 10;
+  const page = Number(req.params.page) > 0 ? Number(req.params.page) : 1;
+const limit = Number(req.params.limit) > 0 ? Number(req.params.limit) : 10;
 
   // Pagination
   const skip = (parseInt(page) - 1) * limit;
